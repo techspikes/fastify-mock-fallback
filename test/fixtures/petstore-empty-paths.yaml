@@ -1,0 +1,5 @@
+openapi: 3.0.4
+info:
+  title: Petstore Empty Paths
+  version: 1.0.27
+paths: {}

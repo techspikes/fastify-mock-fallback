@@ -1,0 +1,180 @@
+openapi: 3.0.4
+info:
+  title: Petstore Source Combinations
+  version: 1.0.27
+paths:
+  /pet/{petId}/status-report:
+    get:
+      tags:
+        - pet
+      summary: Report pet status with authenticated metadata.
+      operationId: reportPetStatus
+      parameters:
+        - in: path
+          name: petId
+          schema:
+            type: integer
+            format: int64
+          required: true
+          examples:
+            params-query-header:
+              value: 10
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - available
+              - pending
+              - sold
+          examples:
+            params-query-header:
+              value: available
+        - in: header
+          name: api_key
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            params-query-header:
+              value: special-key
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+              examples:
+                params-query-header:
+                  x-request-match: params-query-header
+                  value:
+                    matched: params-query-header
+  /user/{username}/session:
+    post:
+      tags:
+        - user
+      summary: Update a user session.
+      operationId: updateUserSession
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          examples:
+            params-cookie-body:
+              value: user1
+        - in: cookie
+          name: session
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            params-cookie-body:
+              value: petstore-session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionUpdate"
+            examples:
+              params-cookie-body:
+                value:
+                  active: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+              examples:
+                params-cookie-body:
+                  x-request-match: params-cookie-body
+                  value:
+                    matched: params-cookie-body
+  /store/order/review:
+    post:
+      tags:
+        - store
+      summary: Review an order with request metadata.
+      operationId: reviewOrder
+      parameters:
+        - in: query
+          name: priority
+          schema:
+            type: string
+            enum:
+              - low
+              - normal
+              - high
+          examples:
+            query-header-cookie-body:
+              value: high
+        - in: header
+          name: api_key
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            query-header-cookie-body:
+              value: special-key
+        - in: cookie
+          name: session
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            query-header-cookie-body:
+              value: petstore-session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderReview"
+            examples:
+              query-header-cookie-body:
+                value:
+                  orderId: 5
+                  approved: true
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+              examples:
+                query-header-cookie-body:
+                  x-request-match: query-header-cookie-body
+                  value:
+                    matched: query-header-cookie-body
+components:
+  schemas:
+    MatchResult:
+      type: object
+      required:
+        - matched
+      properties:
+        matched:
+          type: string
+    SessionUpdate:
+      type: object
+      required:
+        - active
+      properties:
+        active:
+          type: boolean
+    OrderReview:
+      type: object
+      required:
+        - orderId
+        - approved
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        approved:
+          type: boolean

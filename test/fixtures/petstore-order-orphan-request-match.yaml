@@ -1,0 +1,54 @@
+openapi: 3.0.4
+info:
+  title: Petstore Order Orphan Request Match
+  version: 1.0.27
+paths:
+  /store/order/{orderId}:
+    get:
+      tags:
+        - store
+      summary: Find purchase order by ID.
+      operationId: getOrderById
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+              examples:
+                order:
+                  x-request-match: missing-order-example
+                  value:
+                    id: 5
+                    petId: 10
+                    quantity: 1
+                    status: approved
+                    complete: true
+components:
+  schemas:
+    Order:
+      type: object
+      required:
+        - id
+        - petId
+        - quantity
+        - status
+        - complete
+      properties:
+        id:
+          type: integer
+          format: int64
+        petId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+        status:
+          type: string
+          enum:
+            - placed
+            - approved
+            - delivered
+        complete:
+          type: boolean

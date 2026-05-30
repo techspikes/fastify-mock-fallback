@@ -1,0 +1,270 @@
+openapi: 3.0.4
+info:
+  title: Petstore Core
+  version: 1.0.27
+paths:
+  /pet/{petId}:
+    get:
+      tags:
+        - pet
+      summary: Find pet by ID.
+      operationId: getPetById
+      parameters:
+        - in: path
+          name: petId
+          schema:
+            type: integer
+            format: int64
+          required: true
+          examples:
+            rocky:
+              value: 1
+            daisy:
+              value: 2
+            not-found:
+              value: 3
+            bad-request:
+              value: rocky
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+              examples:
+                default:
+                  x-request-match: rocky
+                  value:
+                    id: 1
+                    name: rocky
+                    category:
+                      id: 1
+                      name: Dogs
+                    photoUrls:
+                      - https://example.com/rocky.png
+                    tags:
+                      - id: 1
+                        name: friendly
+                    status: available
+                daisy:
+                  value:
+                    id: 2
+                    name: daisy
+                    category:
+                      id: 1
+                      name: Dogs
+                    photoUrls:
+                      - https://example.com/daisy.png
+                    tags:
+                      - id: 1
+                        name: explicit
+                    status: pending
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequest"
+              examples:
+                bad-request:
+                  x-request-match: bad-request
+                  value:
+                    code: 400
+                    type: error
+                    message: Invalid ID supplied
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+              examples:
+                not-found:
+                  x-request-match: not-found
+                  value:
+                    code: 404
+                    type: error
+                    message: Pet not found
+    post:
+      tags:
+        - pet
+      summary: Updates a pet in the store with form data.
+      operationId: updatePetWithForm
+      parameters:
+        - in: path
+          name: petId
+          schema:
+            type: integer
+            format: int64
+          examples:
+            update-doggie:
+              value: 10
+          required: true
+        - in: query
+          name: name
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            update-doggie:
+              value: doggie
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum:
+              - available
+              - pending
+              - sold
+          examples:
+            update-doggie:
+              value: sold
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+              examples:
+                default:
+                  x-request-match: update-doggie
+                  value:
+                    id: 10
+                    name: doggie
+                    category:
+                      id: 1
+                      name: Dogs
+                    photoUrls:
+                      - https://example.com/doggie.png
+                    tags:
+                      - id: 1
+                        name: friendly
+                    status: sold
+  /pet:
+    post:
+      tags:
+        - pet
+      summary: Add a new pet to the store.
+      operationId: addPet
+      requestBody:
+        description: Create a new pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+            examples:
+              doggie:
+                value:
+                  id: 10
+                  name: doggie
+                  category:
+                    id: 1
+                    name: Dogs
+                  photoUrls:
+                    - https://example.com/doggie.png
+                  tags:
+                    - id: 1
+                      name: friendly
+                  status: available
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+              examples:
+                default:
+                  x-request-match: doggie
+                  value:
+                    id: 10
+                    name: doggie
+                    category:
+                      id: 1
+                      name: Dogs
+                    photoUrls:
+                      - https://example.com/doggie.png
+                    tags:
+                      - id: 1
+                        name: friendly
+                    status: available
+components:
+  schemas:
+    Pet:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - photoUrls
+        - tags
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: object
+          required:
+            - id
+            - name
+          properties:
+            id:
+              type: integer
+              format: int64
+            name:
+              type: string
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        tags:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - name
+            properties:
+              id:
+                type: integer
+                format: int64
+              name:
+                type: string
+        status:
+          type: string
+          enum:
+            - available
+            - pending
+            - sold
+    BadRequest:
+      type: object
+      required:
+        - code
+        - type
+        - message
+      properties:
+        code:
+          type: integer
+        type:
+          type: string
+        message:
+          type: string
+    NotFound:
+      type: object
+      required:
+        - code
+        - type
+        - message
+      properties:
+        code:
+          type: integer
+        type:
+          type: string
+        message:
+          type: string

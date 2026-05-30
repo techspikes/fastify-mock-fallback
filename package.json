@@ -1,0 +1,60 @@
+{
+  "private": true,
+  "name": "@techspikes/fastify-mock-fallback",
+  "version": "0.1.0",
+  "description": "Fastify plugin that registers fallback mock routes from OpenAPI examples.",
+  "author": "knzbr <87257088+knzbr@users.noreply.github.com>",
+  "license": "MIT",
+  "type": "module",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "npm run test:typescript && npm run test:unit",
+    "test:unit": "c8 --100 node --test test/*.test.js",
+    "test:typescript": "tstyche"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "accepts": "^1.3.8",
+    "fastify-plugin": "^5.1.0"
+  },
+  "peerDependencies": {
+    "fastify": "^5.8.5"
+  },
+  "devDependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "c8": "^11.0.0",
+    "eslint": "^9.39.4",
+    "fastify": "^5.8.5",
+    "neostandard": "^0.13.0",
+    "tstyche": "^7.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techspikes/fastify-mock-fallback.git"
+  },
+  "bugs": {
+    "url": "https://github.com/techspikes/fastify-mock-fallback/issues"
+  },
+  "homepage": "https://github.com/techspikes/fastify-mock-fallback#readme",
+  "keywords": [
+    "fastify",
+    "openapi",
+    "mock",
+    "spec-first"
+  ],
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./index.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "types/index.d.ts"
+  ],
+  "engines": {
+    "node": ">=24"
+  }
+}

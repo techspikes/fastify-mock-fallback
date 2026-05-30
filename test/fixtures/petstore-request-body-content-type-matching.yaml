@@ -1,0 +1,50 @@
+openapi: 3.0.4
+info:
+  title: Petstore Request Body Content Type Matching
+  version: 1.0.0
+paths:
+  /pet/status-note:
+    post:
+      operationId: updatePetStatusNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusNote"
+            examples:
+              shared:
+                value:
+                  note: ready for pickup
+          text/plain:
+            schema:
+              type: string
+            examples:
+              shared:
+                value: ready for pickup
+      responses:
+        "200":
+          description: accepted status note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusNote"
+              examples:
+                shared:
+                  value:
+                    note: json accepted
+            text/plain:
+              schema:
+                type: string
+              examples:
+                shared:
+                  value: text accepted
+components:
+  schemas:
+    StatusNote:
+      type: object
+      required:
+        - note
+      properties:
+        note:
+          type: string
+          minLength: 1

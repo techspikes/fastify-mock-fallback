@@ -1,0 +1,48 @@
+openapi: 3.0.4
+info:
+  title: Petstore Inventory Without Request Match
+  version: 1.0.27
+paths:
+  /store/inventory:
+    get:
+      tags:
+        - store
+      summary: Returns pet inventories by status.
+      operationId: getInventory
+      parameters:
+        - in: header
+          name: api_key
+          schema:
+            type: string
+            minLength: 1
+          examples:
+            valid-key:
+              value: special-key
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inventory"
+              examples:
+                inventory:
+                  value:
+                    available: 7
+                    pending: 2
+                    sold: 1
+components:
+  schemas:
+    Inventory:
+      type: object
+      required:
+        - available
+        - pending
+        - sold
+      properties:
+        available:
+          type: integer
+        pending:
+          type: integer
+        sold:
+          type: integer

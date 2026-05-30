@@ -1,0 +1,36 @@
+openapi: 3.0.4
+info:
+  title: Petstore Ref Circular
+  version: 1.0.0
+paths:
+  /pet/{petId}:
+    get:
+      operationId: getPetById
+      parameters:
+        - $ref: "#/components/parameters/PetId"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IdResource"
+              examples:
+                pet:
+                  value:
+                    id: 1
+components:
+  parameters:
+    PetId:
+      $ref: "#/components/parameters/RecursivePetId"
+    RecursivePetId:
+      $ref: "#/components/parameters/PetId"
+  schemas:
+    IdResource:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64

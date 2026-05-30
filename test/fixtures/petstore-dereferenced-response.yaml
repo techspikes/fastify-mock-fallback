@@ -1,0 +1,11 @@
+description: successful operation
+content:
+  application/json:
+    schema:
+      $ref: "./petstore-dereferenced-components.yaml#/components/schemas/DereferencedPet"
+    examples:
+      shared-pet:
+        value:
+          id: 42
+          name: anchored
+          status: available

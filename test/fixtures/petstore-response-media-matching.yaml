@@ -1,0 +1,107 @@
+openapi: 3.0.4
+info:
+  title: Petstore Response Media Matching
+  version: 1.0.0
+paths:
+  /pet/{petId}:
+    get:
+      operationId: getPetByPriority
+      parameters:
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: integer
+          examples:
+            shared:
+              value: 1
+      responses:
+        "200":
+          description: explicit example-level match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+              examples:
+                shared:
+                  x-request-match: shared
+                  value:
+                    matched: example-level
+            text/plain:
+              schema:
+                type: string
+              examples:
+                shared:
+                  x-request-match: shared
+                  value: text example-level
+  /pet/{petId}/media-priority:
+    get:
+      operationId: getPetByMediaPriority
+      parameters:
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: integer
+          examples:
+            shared:
+              value: 1
+      responses:
+        "200":
+          description: same-name examples across response media
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchResult"
+              examples:
+                shared:
+                  value:
+                    matched: same-name
+            text/plain:
+              schema:
+                type: string
+              examples:
+                shared:
+                  value: text same-name
+  /pet/status-note:
+    post:
+      operationId: updatePetStatusNote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatusNote"
+            examples:
+              plain-note:
+                value:
+                  note: ready for pickup
+      responses:
+        "200":
+          description: accepted status note
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                plain-note:
+                  value: status note accepted
+components:
+  schemas:
+    MatchResult:
+      type: object
+      required:
+        - matched
+      properties:
+        matched:
+          type: string
+          enum:
+            - example-level
+            - same-name
+    StatusNote:
+      type: object
+      required:
+        - note
+      properties:
+        note:
+          type: string
+          minLength: 1

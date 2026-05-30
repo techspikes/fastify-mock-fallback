@@ -1,0 +1,41 @@
+openapi: 3.0.4
+info:
+  title: Petstore Operation Without Operation Id
+  version: 1.0.0
+paths:
+  /pet/{petId}:
+    get:
+      parameters:
+        - in: path
+          name: petId
+          schema:
+            type: integer
+          required: true
+          examples:
+            doggie:
+              value: 10
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+              examples:
+                doggie:
+                  value:
+                    id: 10
+                    name: doggie
+components:
+  schemas:
+    Category:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string

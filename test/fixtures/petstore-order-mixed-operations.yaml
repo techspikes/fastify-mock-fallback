@@ -1,0 +1,72 @@
+openapi: 3.0.4
+info:
+  title: Petstore Order Mixed Operations
+  version: 1.0.27
+paths:
+  /store/order/{orderId}:
+    get:
+      tags:
+        - store
+      summary: Find purchase order by ID.
+      operationId: getOrderById
+      parameters:
+        - in: path
+          name: orderId
+          schema:
+            type: integer
+            format: int64
+          required: true
+          examples:
+            valid-order:
+              value: 5
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+              examples:
+                valid-order:
+                  x-request-match: valid-order
+                  value:
+                    id: 5
+                    petId: 10
+                    quantity: 1
+                    status: approved
+                    complete: true
+    delete:
+      tags:
+        - store
+      summary: Delete purchase order by identifier.
+      operationId: deleteOrder
+      responses:
+        "200":
+          description: order deleted
+components:
+  schemas:
+    Order:
+      type: object
+      required:
+        - id
+        - petId
+        - quantity
+        - status
+        - complete
+      properties:
+        id:
+          type: integer
+          format: int64
+        petId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+        status:
+          type: string
+          enum:
+            - placed
+            - approved
+            - delivered
+        complete:
+          type: boolean

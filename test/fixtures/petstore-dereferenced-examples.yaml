@@ -1,0 +1,47 @@
+openapi: 3.0.4
+info:
+  title: Petstore Dereferenced Examples
+  version: 1.0.0
+paths:
+  /pet/{petId}:
+    get:
+      operationId: getDereferencedPetById
+      parameters:
+        - $ref: "#/components/parameters/PetId"
+      responses:
+        "200":
+          $ref: ./petstore-dereferenced-response.yaml
+        "201":
+          $ref: ./petstore-dereferenced-response.yaml#
+        "404":
+          description: not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFound"
+              examples:
+                missing-pet:
+                  x-request-match: missing-pet
+                  value: { code: 404, message: not found }
+components:
+  schemas:
+    NotFound:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer }
+        message: { type: string }
+  parameters:
+    PetId:
+      in: path
+      name: petId
+      required: true
+      schema:
+        type: integer
+      examples:
+        shared-pet:
+          value: 42
+        shared-pet-alias:
+          value: 42
+        missing-pet:
+          value: 404

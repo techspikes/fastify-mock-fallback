@@ -1,0 +1,39 @@
+openapi: 3.0.4
+info:
+  title: Petstore Request Match Invalid Media Location
+  version: 1.0.0
+paths:
+  /pet/{petId}:
+    get:
+      operationId: getPetById
+      parameters:
+        - in: path
+          name: petId
+          required: true
+          schema:
+            type: integer
+          examples:
+            invalid:
+              value: 1
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              x-request-match: invalid
+              schema:
+                $ref: "#/components/schemas/IdResource"
+              examples:
+                invalid:
+                  value:
+                    id: 1
+components:
+  schemas:
+    IdResource:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64

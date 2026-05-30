@@ -1,0 +1,18 @@
+openapi: 3.0.4
+info:
+  title: Petstore Order With Missing Responses
+  version: 1.0.27
+paths:
+  /pet/{petId}/uploadImage:
+    post:
+      tags:
+        - pet
+      summary: Uploads an image.
+      operationId: uploadFile
+      parameters:
+        - in: path
+          name: petId
+          schema:
+            type: integer
+            format: int64
+          required: true

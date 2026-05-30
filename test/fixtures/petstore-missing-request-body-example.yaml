@@ -1,0 +1,104 @@
+openapi: 3.0.4
+info:
+  title: Petstore Missing Request Body Example
+  version: 1.0.27
+paths:
+  /pet:
+    put:
+      tags:
+        - pet
+      summary: Update an existing pet.
+      operationId: updatePet
+      requestBody:
+        description: Update an existent pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetPreview"
+              examples:
+                updated-pet:
+                  x-request-match: updated-pet
+                  value:
+                    id: 10
+                    name: doggie
+                    photoUrls:
+                      - https://example.com/doggie.png
+                    status: sold
+components:
+  schemas:
+    Pet:
+      required:
+        - name
+        - photoUrls
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          example: doggie
+        category:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+            name:
+              type: string
+              example: Dogs
+        photoUrls:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              name:
+                type: string
+        status:
+          type: string
+          description: pet status in the store
+          enum:
+            - available
+            - pending
+            - sold
+    PetPreview:
+      type: object
+      required:
+        - id
+        - name
+        - photoUrls
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        status:
+          type: string
+          enum:
+            - available
+            - pending
+            - sold
