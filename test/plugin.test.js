@@ -3,11 +3,11 @@ import { describe, it } from 'node:test'
 import Fastify from 'fastify'
 
 import { fastifyMockFallback } from '../index.js'
-import { buildApp, fixturePath } from './helper/helper.js'
+import { buildApp, resolveSpecification } from './helper/helper.js'
 
 describe('Plugin registration', () => {
   it('registers mock routes from a specification', async () => {
-    const app = await buildApp(fixturePath('petstore-core-behavior'))
+    const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
     try {
       // The plugin should register routes for every mockable operation.
@@ -19,9 +19,12 @@ describe('Plugin registration', () => {
   })
 
   it('keeps an existing implementation instead of replacing it with a mock', async () => {
-    const app = await buildApp(fixturePath('petstore-core-behavior'), {
-      'GET /pet/:petId': (_req, reply) =>
-        reply.status(200).send({ source: 'real-impl' }),
+    const app = await buildApp('../fixtures/petstore-core-behavior.yaml', app => {
+      app.route({
+        method: 'GET',
+        url: '/pet/:petId',
+        handler: (_req, reply) => reply.status(200).send({ source: 'real-impl' }),
+      })
     })
 
     try {
@@ -41,7 +44,7 @@ describe('Plugin registration', () => {
 
     try {
       await app.register(fastifyMockFallback, {
-        specification: fixturePath('petstore-core-behavior'),
+        specification: resolveSpecification('../fixtures/petstore-core-behavior.yaml'),
       })
       await app.ready()
 

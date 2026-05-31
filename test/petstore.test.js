@@ -1,15 +1,13 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import Fastify from 'fastify'
 
-import { fastifyMockFallback } from '../index.js'
-import { buildApp, fixturePath, jsonFixturePath } from './helper/helper.js'
+import { buildApp, buildLoggedApp } from './helper/helper.js'
 
 describe('Petstore mock responses', () => {
   describe('matched requests', () => {
     describe('response examples', () => {
       it('matches same-name response and path parameter examples', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/1' })
@@ -30,7 +28,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches same-name response and path-level parameter examples', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/store/order/5' })
@@ -49,7 +47,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('uses operation-level parameter examples over path-level parameter examples', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'DELETE', url: '/store/order/6' })
@@ -65,7 +63,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches x-request-match and path parameter examples', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/2' })
@@ -86,7 +84,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns a 404 response for a matched response example', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/3' })
@@ -99,7 +97,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns a response body for a matched 400 response example', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/rocky' })
@@ -114,7 +112,7 @@ describe('Petstore mock responses', () => {
 
     describe('parameterless operations', () => {
       it('uses 200 response example for operations without request examples', async () => {
-        const app = await buildApp(fixturePath('petstore-parameterless-operations'))
+        const app = await buildApp('../fixtures/petstore-parameterless-operations.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pets' })
@@ -127,7 +125,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('uses accepted response media for operations without request examples', async () => {
-        const app = await buildApp(fixturePath('petstore-parameterless-operations'))
+        const app = await buildApp('../fixtures/petstore-parameterless-operations.yaml')
 
         try {
           const acceptedResponse = await app.inject({
@@ -149,7 +147,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns 501 for operations without request examples when no usable 200 example exists', async () => {
-        const app = await buildApp(fixturePath('petstore-parameterless-operations'))
+        const app = await buildApp('../fixtures/petstore-parameterless-operations.yaml')
 
         try {
           const noExampleResponse = await app.inject({ method: 'DELETE', url: '/pets/cache' })
@@ -184,7 +182,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('uses a 200 response example for operations without request examples', async () => {
-        const app = await buildApp(fixturePath('petstore-parameterless-operations'))
+        const app = await buildApp('../fixtures/petstore-parameterless-operations.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pets/summary' })
@@ -197,7 +195,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns 501 when a parameterized operation has no matching request example', async () => {
-        const app = await buildApp(fixturePath('petstore-parameterless-operations'))
+        const app = await buildApp('../fixtures/petstore-parameterless-operations.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/findByStatus?status=archived' })
@@ -216,7 +214,7 @@ describe('Petstore mock responses', () => {
 
     describe('response media', () => {
       it('prioritizes explicit x-request-match over same-name response examples', async () => {
-        const app = await buildApp(fixturePath('petstore-response-content-negotiation'))
+        const app = await buildApp('../fixtures/petstore-response-content-negotiation.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/1' })
@@ -228,7 +226,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('selects accepted x-request-match response media', async () => {
-        const app = await buildApp(fixturePath('petstore-response-content-negotiation'))
+        const app = await buildApp('../fixtures/petstore-response-content-negotiation.yaml')
 
         try {
           const jsonResponse = await app.inject({
@@ -276,7 +274,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns 406 when x-request-match response media is unacceptable', async () => {
-        const app = await buildApp(fixturePath('petstore-response-content-negotiation'))
+        const app = await buildApp('../fixtures/petstore-response-content-negotiation.yaml')
 
         try {
           const unacceptableResponse = await app.inject({
@@ -296,7 +294,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('selects same-name response media using Accept negotiation', async () => {
-        const app = await buildApp(fixturePath('petstore-response-content-negotiation'))
+        const app = await buildApp('../fixtures/petstore-response-content-negotiation.yaml')
 
         try {
           const jsonResponse = await app.inject({
@@ -320,7 +318,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches a JSON request body example with a non-JSON Accept header', async () => {
-        const app = await buildApp(fixturePath('petstore-response-content-negotiation'))
+        const app = await buildApp('../fixtures/petstore-response-content-negotiation.yaml')
 
         try {
           const response = await app.inject({
@@ -343,7 +341,7 @@ describe('Petstore mock responses', () => {
 
     describe('request body examples', () => {
       it('matches request body example', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({
@@ -399,7 +397,7 @@ describe('Petstore mock responses', () => {
 
     describe('request body content types', () => {
       it('selects same-name request body media examples using Content-Type', async () => {
-        const app = await buildApp(fixturePath('petstore-request-body-content-types'))
+        const app = await buildApp('../fixtures/petstore-request-body-content-types.yaml')
 
         try {
           const jsonResponse = await app.inject({
@@ -431,7 +429,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('does not select same-name request body media examples when Content-Type is omitted', async () => {
-        const app = await buildApp(fixturePath('petstore-request-body-content-types'))
+        const app = await buildApp('../fixtures/petstore-request-body-content-types.yaml')
 
         try {
           const response = await app.inject({
@@ -452,7 +450,7 @@ describe('Petstore mock responses', () => {
 
     describe('request sources', () => {
       it('requires every parameter condition with the same request example name', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'POST', url: '/pet/10?name=doggie&status=sold' })
@@ -472,16 +470,9 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches path, query, and header request sources together', async () => {
-        const app = Fastify({ logger: false })
+        const app = await buildApp('../fixtures/petstore-request-sources.yaml', { cookie: true })
 
         try {
-          await app.register(await import('@fastify/cookie').then(m => m.default))
-          await app.register(fastifyMockFallback, {
-            specification: fixturePath('petstore-request-sources'),
-            enable: true,
-          })
-          await app.ready()
-
           const paramsQueryHeaderResponse = await app.inject({
             method: 'GET',
             url: '/pet/10/status-report?status=available',
@@ -495,16 +486,9 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches path, cookie, and body request sources together', async () => {
-        const app = Fastify({ logger: false })
+        const app = await buildApp('../fixtures/petstore-request-sources.yaml', { cookie: true })
 
         try {
-          await app.register(await import('@fastify/cookie').then(m => m.default))
-          await app.register(fastifyMockFallback, {
-            specification: fixturePath('petstore-request-sources'),
-            enable: true,
-          })
-          await app.ready()
-
           const paramsCookieBodyResponse = await app.inject({
             method: 'POST',
             url: '/user/user1/session',
@@ -519,16 +503,9 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches query, header, cookie, and body request sources together', async () => {
-        const app = Fastify({ logger: false })
+        const app = await buildApp('../fixtures/petstore-request-sources.yaml', { cookie: true })
 
         try {
-          await app.register(await import('@fastify/cookie').then(m => m.default))
-          await app.register(fastifyMockFallback, {
-            specification: fixturePath('petstore-request-sources'),
-            enable: true,
-          })
-          await app.ready()
-
           const queryHeaderCookieBodyResponse = await app.inject({
             method: 'POST',
             url: '/store/order/review?priority=high',
@@ -544,17 +521,9 @@ describe('Petstore mock responses', () => {
       })
 
       it('matches a standalone cookie parameter example with @fastify/cookie', async () => {
-        const app = Fastify({ logger: false })
+        const app = await buildApp('../fixtures/petstore-request-sources.yaml', { cookie: true })
 
         try {
-          // Cookie examples require @fastify/cookie so request.cookies is populated.
-          await app.register(await import('@fastify/cookie').then(m => m.default))
-          await app.register(fastifyMockFallback, {
-            specification: fixturePath('petstore-request-sources'),
-            enable: true,
-          })
-          await app.ready()
-
           const response = await app.inject({
             method: 'GET',
             url: '/user/logout',
@@ -569,7 +538,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('returns 501 when standalone cookie examples cannot be read without @fastify/cookie', async () => {
-        const app = await buildApp(fixturePath('petstore-request-sources'))
+        const app = await buildApp('../fixtures/petstore-request-sources.yaml')
 
         try {
           const response = await app.inject({
@@ -586,7 +555,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('ignores parameters that do not define examples', async () => {
-        const app = await buildApp(fixturePath('petstore-partial-examples'))
+        const app = await buildApp('../fixtures/petstore-partial-examples.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/user/login?username=user1' })
@@ -603,15 +572,12 @@ describe('Petstore mock responses', () => {
   describe('spec processing', () => {
     describe('parsing', () => {
       it('loads the core Petstore examples from a JSON specification', async () => {
-        const app = Fastify({ logger: false })
+        const app = await buildApp({
+          path: '../fixtures/petstore-core-behavior',
+          format: 'json',
+        })
 
         try {
-          await app.register(fastifyMockFallback, {
-            specification: jsonFixturePath('petstore-core-behavior'),
-            enable: true,
-          })
-          await app.ready()
-
           const response = await app.inject({ method: 'GET', url: '/pet/1' })
 
           assert.equal(response.statusCode, 200)
@@ -629,7 +595,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('resolves YAML anchors, aliases, local $ref, and relative file $ref entries before registering mocks', async () => {
-        const app = await buildApp(fixturePath('petstore-parsing-dereferenced-examples'))
+        const app = await buildApp('../fixtures/petstore-parsing-dereferenced-examples.yaml')
 
         try {
           const matchedResponse = await app.inject({ method: 'GET', url: '/pet/42' })
@@ -649,26 +615,14 @@ describe('Petstore mock responses', () => {
       })
 
       it('handles a specification without paths', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-parsing-no-paths'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /is not a valid Openapi API definition/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-parsing-no-paths.yaml'),
+          /is not a valid Openapi API definition/
+        )
       })
 
       it('handles a specification with empty paths', async () => {
-        const app = await buildApp(fixturePath('petstore-parsing-empty-paths'))
+        const app = await buildApp('../fixtures/petstore-parsing-empty-paths.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/10' })
@@ -682,7 +636,7 @@ describe('Petstore mock responses', () => {
 
     describe('route generation', () => {
       it('marks generated mock responses with x-mock-response', async () => {
-        const app = await buildApp(fixturePath('petstore-core-behavior'))
+        const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/1' })
@@ -694,7 +648,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('registers operations without operationId', async () => {
-        const app = await buildApp(fixturePath('petstore-route-generation-without-operation-id'))
+        const app = await buildApp('../fixtures/petstore-route-generation-without-operation-id.yaml')
 
         try {
           const matchedResponse = await app.inject({ method: 'GET', url: '/pet/10' })
@@ -713,7 +667,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('registers parameterless operations without 200 examples as 501 routes next to mockable operations', async () => {
-        const app = await buildApp(fixturePath('petstore-route-generation-mixed-operations'))
+        const app = await buildApp('../fixtures/petstore-route-generation-mixed-operations.yaml')
 
         try {
           // The mockable operation works, while the plain parameterless operation returns 501.
@@ -736,7 +690,7 @@ describe('Petstore mock responses', () => {
       })
 
       it('registers 501 fallback routes without blocking operations that have usable examples', async () => {
-        const app = await buildApp(fixturePath('petstore-route-generation-fallback-routes'))
+        const app = await buildApp('../fixtures/petstore-route-generation-fallback-routes.yaml')
 
         try {
           const inventoryResponse = await app.inject({ method: 'GET', url: '/store/inventory' })
@@ -759,163 +713,78 @@ describe('Petstore mock responses', () => {
           await app.close()
         }
       })
+
+      it('logs a warning when a parameterized operation has no response example', async () => {
+        const { app, hasSkipOperationLog } = await buildLoggedApp('../fixtures/petstore-route-generation-missing-response-example.yaml')
+
+        try {
+          assert.equal(app.hasRoute({ method: 'GET', url: '/pet/findByStatus' }), false)
+          assert.equal(hasSkipOperationLog('findPetsByStatus'), true)
+        } finally {
+          await app.close()
+        }
+      })
     })
 
     describe('validation', () => {
       it('throws during registration when an operation does not define response codes', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-missing-responses'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Operation "uploadFile" must define at least one response/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-missing-responses.yaml'),
+          /Operation "uploadFile" must define at least one response/
+        )
       })
 
       it('throws during registration when response default is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-default'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "default" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-default.yaml'),
+          /Response status "default" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws during registration when response 1XX is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-1xx'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "1XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-1xx.yaml'),
+          /Response status "1XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws during registration when response 2XX is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-2xx'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "2XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-2xx.yaml'),
+          /Response status "2XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws during registration when response 3XX is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-3xx'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "3XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-3xx.yaml'),
+          /Response status "3XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws during registration when response 4XX is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-4xx'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "4XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-4xx.yaml'),
+          /Response status "4XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws during registration when response 5XX is used', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-response-status-5xx'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Response status "5XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-response-status-5xx.yaml'),
+          /Response status "5XX" in operation "listPets" must be a concrete HTTP status code from 100 to 599/
+        )
       })
 
       it('throws for unsupported OpenAPI parameter locations', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-unsupported-parameter-location'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Unsupported OpenAPI parameter location "params" for parameter "color" in operation "findPetsByColor"/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-unsupported-parameter-location.yaml'),
+          /Unsupported OpenAPI parameter location "params" for parameter "color" in operation "findPetsByColor"/
+        )
       })
 
       it('registers no route when response examples are not linked to request examples for parameterized operations', async () => {
-        const app = await buildApp(fixturePath('petstore-validation-missing-request-example'))
+        const app = await buildApp('../fixtures/petstore-validation-missing-request-example.yaml')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/store/inventory' })
@@ -927,143 +796,59 @@ describe('Petstore mock responses', () => {
       })
 
       it('throws during registration when response examples reference unavailable request body examples', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-missing-request-body-example'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Request example "updated-pet" referenced by operation "updatePet" does not exist/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-missing-request-body-example.yaml'),
+          /Request example "updated-pet" referenced by operation "updatePet" does not exist/
+        )
       })
 
       it('throws during registration when x-request-match references a missing request example', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-orphan-request-match'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Request example "missing-order-example" referenced by operation "getOrderById" does not exist/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-orphan-request-match.yaml'),
+          /Request example "missing-order-example" referenced by operation "getOrderById" does not exist/
+        )
       })
 
       it('throws when x-request-match is defined outside response examples', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-request-match-location'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /x-request-match is only supported on response examples for operation "getPetById"/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-request-match-location.yaml'),
+          /x-request-match is only supported on response examples for operation "getPetById"/
+        )
       })
 
       it('throws when x-request-match is defined on a response object', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-request-match-response-location'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /x-request-match is only supported on response examples for operation "getPetById"/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-request-match-response-location.yaml'),
+          /x-request-match is only supported on response examples for operation "getPetById"/
+        )
       })
 
       it('throws when x-request-match is defined on response media content', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-invalid-request-match-media-location'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /x-request-match is only supported on response examples for operation "getPetById"/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-invalid-request-match-media-location.yaml'),
+          /x-request-match is only supported on response examples for operation "getPetById"/
+        )
       })
 
       it('throws when a $ref target does not exist', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-ref-missing-target'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Missing \$ref pointer "#\/components\/parameters\/PetId"/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-ref-missing-target.yaml'),
+          /Missing \$ref pointer "#\/components\/parameters\/PetId"/
+        )
       })
 
       it('throws when $ref entries are circular', async () => {
-        const app = Fastify({ logger: false })
-
-        try {
-          await assert.rejects(
-            async () => {
-              await app.register(fastifyMockFallback, {
-                specification: fixturePath('petstore-validation-ref-circular'),
-                enable: true,
-              })
-              await app.ready()
-            },
-            /Circular \$ref pointer found/
-          )
-        } finally {
-          await app.close()
-        }
+        await assert.rejects(
+          () => buildApp('../fixtures/petstore-validation-ref-circular.yaml'),
+          /Circular \$ref pointer found/
+        )
       })
     })
   })
 
   describe('unmatched requests', () => {
     it('returns 501 when no petId example matches', async () => {
-      const app = await buildApp(fixturePath('petstore-core-behavior'))
+      const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
       try {
         const response = await app.inject({ method: 'GET', url: '/pet/999' })
@@ -1076,7 +861,7 @@ describe('Petstore mock responses', () => {
     })
 
     it('returns 501 when any condition in a multi-parameter match fails', async () => {
-      const app = await buildApp(fixturePath('petstore-core-behavior'))
+      const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
       try {
         const response = await app.inject({ method: 'POST', url: '/pet/10?name=doggie&status=available' })
@@ -1089,7 +874,7 @@ describe('Petstore mock responses', () => {
     })
 
     it('returns 501 when no request body example matches', async () => {
-      const app = await buildApp(fixturePath('petstore-core-behavior'))
+      const app = await buildApp('../fixtures/petstore-core-behavior.yaml')
 
       try {
         const response = await app.inject({

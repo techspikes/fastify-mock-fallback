@@ -256,13 +256,16 @@ function collectResponseEntries (pathItem, operation, operationName) {
 }
 
 // Converts OpenAPI operations into Fastify route definitions.
-function buildMocks (api) {
+function buildMocks (api, onSkipOperation) {
   const buildOperationMock = (rawPath, pathItem, httpMethod, operation) => {
     const operationName = operation.operationId ?? `${httpMethod} ${rawPath}`
     const { requestExamples, entries } = collectResponseEntries(pathItem, operation, operationName)
 
     // Parameterized operations without linked responses are skipped.
-    if (requestExamples.size !== 0 && entries.length === 0) return
+    if (requestExamples.size !== 0 && entries.length === 0) {
+      onSkipOperation(operationName)
+      return
+    }
 
     return {
       fastifyPath: rawPath.replace(/\{([^}]+)\}/g, ':$1'),
@@ -293,9 +296,10 @@ export const fastifyMockFallback = fp(async (app, options) => {
   }
 
   const api = await loadOpenApiSpecification(specification)
-  const mocks = buildMocks(api)
 
-  let registeredCount = 0
+  const mocks = buildMocks(api, operationName => {
+    app.log.warn(`skip operation "${operationName}", no response example found for parameterized operation`)
+  })
 
   mocks.forEach(mock => {
     const { fastifyPath, httpMethod, operationName, entries } = mock
@@ -337,10 +341,9 @@ export const fastifyMockFallback = fp(async (app, options) => {
     })
 
     app.log.info(`registered mock operation: ${operationName}`)
-    registeredCount++
   })
 
-  app.log.info(`total mock routes: ${registeredCount}`)
+  app.log.info('finished registering mock routes')
 }, {
   name: 'fastify-mock-fallback',
   fastify: '5.x',

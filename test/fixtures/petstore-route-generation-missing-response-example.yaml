@@ -1,0 +1,30 @@
+openapi: 3.0.4
+info:
+  title: Petstore Missing Parameterized Response Example
+  version: 1.0.0
+paths:
+  /pet/findByStatus:
+    get:
+      operationId: findPetsByStatus
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+          examples:
+            available:
+              value: available
+      responses:
+        "200":
+          description: available pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+              examples:
+                sold:
+                  value:
+                    - id: 20
+                      status: sold

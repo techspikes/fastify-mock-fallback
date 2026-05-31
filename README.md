@@ -180,6 +180,7 @@ Unsupported OpenAPI parameter locations throw during plugin registration.
 
 * Converts OpenAPI paths such as `/pet/{petId}` to Fastify paths such as `/pet/:petId`.
 * Registers routes only for operations with at least one linked response.
+* Logs a warning when a parameterized operation has request examples but no linked response example.
 * Checks `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, and `HEAD`.
 * Adds `x-mock-response: true` to generated mock responses.
 * Returns the matched response status code and body when a body is configured.
