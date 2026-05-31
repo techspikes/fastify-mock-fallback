@@ -9,7 +9,7 @@ Use it for spec-first development: keep real Fastify handlers for implemented op
 
 ## Scope
 
-This plugin is intentionally short and simple. It is designed for teams that want lightweight OpenAPI example fallback behavior inside the same Fastify app they are already building.
+**This plugin is intentionally short and simple.** It is designed for true agile teams where full-stack engineers develop both the frontend and backend while practicing XP.
 
 If you need a full-featured API mocking and testing platform, consider [Microcks](https://microcks.io/), a CNCF Incubating project.
 
