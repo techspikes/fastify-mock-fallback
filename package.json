@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@techspikes/fastify-mock-fallback",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fastify plugin that registers fallback mock routes from OpenAPI examples.",
   "author": "knzbr <87257088+knzbr@users.noreply.github.com>",
   "license": "MIT",

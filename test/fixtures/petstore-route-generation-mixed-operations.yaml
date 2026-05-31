@@ -1,6 +1,6 @@
 openapi: 3.0.4
 info:
-  title: Petstore Order Mixed Operations
+  title: Petstore Order Mockable And Parameterless Operations
   version: 1.0.27
 paths:
   /store/order/{orderId}:

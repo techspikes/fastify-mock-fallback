@@ -7,7 +7,7 @@ import { buildApp, fixturePath } from './helper/helper.js'
 
 describe('Plugin registration', () => {
   it('registers mock routes from a specification', async () => {
-    const app = await buildApp(fixturePath('petstore-core'))
+    const app = await buildApp(fixturePath('petstore-core-behavior'))
 
     try {
       // The plugin should register routes for every mockable operation.
@@ -19,7 +19,7 @@ describe('Plugin registration', () => {
   })
 
   it('keeps an existing implementation instead of replacing it with a mock', async () => {
-    const app = await buildApp(fixturePath('petstore-core'), {
+    const app = await buildApp(fixturePath('petstore-core-behavior'), {
       'GET /pet/:petId': (_req, reply) =>
         reply.status(200).send({ source: 'real-impl' }),
     })
@@ -41,7 +41,7 @@ describe('Plugin registration', () => {
 
     try {
       await app.register(fastifyMockFallback, {
-        specification: fixturePath('petstore-core'),
+        specification: fixturePath('petstore-core-behavior'),
       })
       await app.ready()
 
