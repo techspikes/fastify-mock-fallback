@@ -989,7 +989,7 @@ describe('Petstore mock responses', () => {
         }
       })
 
-      it('throws when x-request-match is defined outside response example level', async () => {
+      it('throws when x-request-match is defined outside response examples', async () => {
         const app = Fastify({ logger: false })
 
         try {
@@ -1001,14 +1001,14 @@ describe('Petstore mock responses', () => {
               })
               await app.ready()
             },
-            /x-request-match is only supported at response example level for operation "getPetById"/
+            /x-request-match is only supported on response examples for operation "getPetById"/
           )
         } finally {
           await app.close()
         }
       })
 
-      it('throws when x-request-match is defined at response object level', async () => {
+      it('throws when x-request-match is defined on a response object', async () => {
         const app = Fastify({ logger: false })
 
         try {
@@ -1020,14 +1020,14 @@ describe('Petstore mock responses', () => {
               })
               await app.ready()
             },
-            /x-request-match is only supported at response example level for operation "getPetById"/
+            /x-request-match is only supported on response examples for operation "getPetById"/
           )
         } finally {
           await app.close()
         }
       })
 
-      it('throws when x-request-match is defined at response media level', async () => {
+      it('throws when x-request-match is defined on response media content', async () => {
         const app = Fastify({ logger: false })
 
         try {
@@ -1039,7 +1039,7 @@ describe('Petstore mock responses', () => {
               })
               await app.ready()
             },
-            /x-request-match is only supported at response example level for operation "getPetById"/
+            /x-request-match is only supported on response examples for operation "getPetById"/
           )
         } finally {
           await app.close()

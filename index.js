@@ -79,7 +79,7 @@ function rejectInvalidRequestMatchLocation (target, operationName) {
   if (target?.[X_REQUEST_MATCH] === undefined) return
 
   throw new Error(
-    `${X_REQUEST_MATCH} is only supported at response example level for operation "${operationName}"`
+    `${X_REQUEST_MATCH} is only supported on response examples for operation "${operationName}"`
   )
 }
 

@@ -5,13 +5,13 @@
 
 Fastify plugin that registers fallback mock routes from OpenAPI request and response examples.
 
-It is intended for spec-first development: keep real Fastify handlers for implemented operations, and let this plugin serve example responses for operations that are not yet implemented.
+Use it for spec-first development: keep real Fastify handlers for implemented operations, and let this plugin serve example responses for operations that are not implemented yet.
 
 ## Scope
 
-**Intentionally short and simple.** Designed for true agile teams where full-stack engineers practice XP to develop both frontend and backend.
+This plugin is intentionally short and simple. It is designed for teams that want lightweight OpenAPI example fallback behavior inside the same Fastify app they are already building.
 
-If you are looking for a more full-featured API mocking and testing platform, consider [Microcks](https://microcks.io/), a CNCF Incubating project.
+If you need a full-featured API mocking and testing platform, consider [Microcks](https://microcks.io/), a CNCF Incubating project.
 
 ## Install
 
@@ -19,15 +19,21 @@ If you are looking for a more full-featured API mocking and testing platform, co
 npm i @techspikes/fastify-mock-fallback
 ```
 
-### Compatibility
+## Compatibility
 
 | Plugin version | Fastify version |
 | -------------- | --------------- |
-| `^0.1.x` | `^5.x` |
+| `^0.2.x` | `^5.x` |
+
+## Supported Specification Versions
+
+* Supports OpenAPI 3.0.x documents.
+* OpenAPI 3.1.x is not officially supported.
+* Swagger/OpenAPI 2.0 documents are not supported for mock generation, even though the underlying parser may be able to parse them.
 
 ## Usage
 
-Import `@techspikes/fastify-mock-fallback` and register it as any other plugin.
+Register the plugin with an OpenAPI 3.0.x YAML or JSON file.
 
 ```js
 import Fastify from 'fastify'
@@ -47,14 +53,26 @@ fastify.get('/implemented', async () => {
 await fastify.listen({ port: 3000 })
 ```
 
-The plugin reads OpenAPI YAML and JSON files through `@apidevtools/swagger-parser`. YAML anchors, aliases, local `$ref`, and relative file `$ref` entries are resolved in memory before mock routes are registered. For security, remote `$ref` entries are not fetched.
-
 Existing Fastify routes are not replaced. If a generated mock route conflicts with an already registered route, the existing route wins.
 
 ### Options
 
-* `specification`: Path to an OpenAPI YAML or JSON file. Required.
-* `enable`: Set to `true` to register mock routes. Default: `false`.
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `specification` | `string` | required | Path to an OpenAPI YAML or JSON file. |
+| `enable` | `boolean` | `false` | Registers mock routes when set to `true`. |
+
+## OpenAPI Loading
+
+The plugin reads OpenAPI 3.0.x YAML and JSON files through `@apidevtools/swagger-parser`.
+
+Supported before route registration:
+
+* YAML anchors and aliases
+* local `$ref`
+* relative file `$ref`
+
+Remote `$ref` entries are disabled as a safety precaution and are not fetched.
 
 ## Matching
 
@@ -62,24 +80,32 @@ The plugin builds request examples from an operation's parameters and request bo
 
 Request examples can come from:
 
-* `path` parameters, matched against `request.params`
-* `query` parameters, matched against `request.query`
-* `header` parameters, matched against lower-case `request.headers`
-* `cookie` parameters, matched against `request.cookies`
-* `requestBody`, matched against `request.body`
+| OpenAPI source | Fastify request field |
+| -------------- | --------------------- |
+| `path` parameters | `request.params` |
+| `query` parameters | `request.query` |
+| `header` parameters | lower-case `request.headers` |
+| `cookie` parameters | `request.cookies` |
+| `requestBody` examples | `request.body` |
 
-Parameter, header, cookie, and query values are compared as strings. Request bodies are compared by JSON serialization. Cookie matching requires a cookie parser such as `@fastify/cookie`.
+Parameter, header, cookie, and query values are compared as strings. Request bodies are compared with deep strict equality. Cookie matching requires a cookie parser such as `@fastify/cookie`.
+
+Path-level parameters are included in request matching. Operation-level parameters override path-level parameters with the same `in` and `name` values.
 
 When request body examples with the same name are defined across multiple media types, request matching uses the client `Content-Type` header to select the matching request body media.
 
-### Response matching
+### Response Matching
 
-Responses are linked in priority order:
+Responses are linked in this priority order:
 
-1. response example-level `x-request-match`
+1. response examples with `x-request-match`
 2. same-name response and request examples
 3. for operations without request examples, the first status `200` media entry with `example`
 4. for operations without request examples, the first status `200` media entry with `examples`
+
+Response media is selected from the request `Accept` header by using the `accepts` package. When `Accept` is omitted, `*/*` is assumed. After media selection, the first matching response entry in OpenAPI definition order is used.
+
+### Example
 
 ```yaml
 openapi: "3.0.4"
@@ -132,20 +158,25 @@ paths:
               example: [{ id: 1, name: rocky }, { id: 2, name: daisy }]
 ```
 
-`GET /pet/1` uses response example-level `x-request-match`. `GET /pet/2` uses same-name matching. `GET /pet/3` uses response example-level `x-request-match` and returns `404`. `GET /pets` has no request examples, so it uses the status `200` response `example`.
+In this example:
 
-Response media is selected from the request `Accept` header by using the `accepts` package. When `Accept` is omitted, `*/*` is assumed. After media selection, the first matching response entry in OpenAPI definition order is used.
+* `GET /pet/1` uses a response example with `x-request-match`.
+* `GET /pet/2` uses same-name matching.
+* `GET /pet/3` uses a response example with `x-request-match` and returns `404`.
+* `GET /pets` has no request examples, so it uses the status `200` response `example`.
 
-### Validation
+## Validation
 
 Explicit references are strict:
 
 * `x-request-match` must reference an existing request example.
-* `x-request-match` can be defined only at response example level.
+* `x-request-match` can be defined only on response examples.
+* response statuses must be concrete HTTP status codes from `100` to `599`.
+* each operation must define at least one response entry.
 
 Unsupported OpenAPI parameter locations throw during plugin registration.
 
-## Runtime behavior
+## Runtime Behavior
 
 * Converts OpenAPI paths such as `/pet/{petId}` to Fastify paths such as `/pet/:petId`.
 * Registers routes only for operations with at least one linked response.
