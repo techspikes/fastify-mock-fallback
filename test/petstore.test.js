@@ -762,31 +762,6 @@ describe('Petstore mock responses', () => {
     })
 
     describe('validation', () => {
-      const createSpecWithResponseStatus = (status) => ({
-        openapi: '3.0.4',
-        info: {
-          title: 'Invalid Response Status',
-          version: '1.0.0',
-        },
-        paths: {
-          '/pets': {
-            get: {
-              operationId: 'listPets',
-              responses: {
-                [status]: {
-                  description: 'response',
-                  content: {
-                    'application/json': {
-                      example: [],
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      })
-
       it('throws during registration when an operation does not define response codes', async () => {
         const app = Fastify({ logger: false })
 
@@ -813,7 +788,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('default'),
+                specification: fixturePath('petstore-validation-invalid-response-status-default'),
                 enable: true,
               })
               await app.ready()
@@ -832,7 +807,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('1XX'),
+                specification: fixturePath('petstore-validation-invalid-response-status-1xx'),
                 enable: true,
               })
               await app.ready()
@@ -851,7 +826,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('2XX'),
+                specification: fixturePath('petstore-validation-invalid-response-status-2xx'),
                 enable: true,
               })
               await app.ready()
@@ -870,7 +845,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('3XX'),
+                specification: fixturePath('petstore-validation-invalid-response-status-3xx'),
                 enable: true,
               })
               await app.ready()
@@ -889,7 +864,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('4XX'),
+                specification: fixturePath('petstore-validation-invalid-response-status-4xx'),
                 enable: true,
               })
               await app.ready()
@@ -908,7 +883,7 @@ describe('Petstore mock responses', () => {
           await assert.rejects(
             async () => {
               await app.register(fastifyMockFallback, {
-                specification: createSpecWithResponseStatus('5XX'),
+                specification: fixturePath('petstore-validation-invalid-response-status-5xx'),
                 enable: true,
               })
               await app.ready()
