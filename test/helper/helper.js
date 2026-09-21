@@ -4,11 +4,9 @@ import Fastify from 'fastify'
 import { fastifyMockFallback } from '../../index.js'
 
 export function resolveSpecification (specification) {
-  if (specification?.format) {
-    return resolveSpecification(`${specification.path}.${specification.format}`)
+  if (typeof specification !== 'string' || !/\.(?:json|yaml)$/.test(specification)) {
+    throw new TypeError('Specification must be a .json or .yaml file path')
   }
-
-  if (typeof specification !== 'string') return specification
 
   return fileURLToPath(new URL(specification, import.meta.url))
 }

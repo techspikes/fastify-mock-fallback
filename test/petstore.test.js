@@ -7,10 +7,7 @@ describe('Petstore mock responses', () => {
   describe('spec processing', () => {
     describe('parsing', () => {
       it('loads the core Petstore examples from a JSON specification', async () => {
-        const app = await buildApp({
-          path: '../fixtures/petstore-core-behavior',
-          format: 'json',
-        })
+        const app = await buildApp('../fixtures/petstore-core-behavior.json')
 
         try {
           const response = await app.inject({ method: 'GET', url: '/pet/1' })
