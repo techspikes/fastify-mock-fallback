@@ -1,0 +1,29 @@
+openapi: 3.0.4
+info:
+  title: Petstore Route Generation HEAD Before GET
+  version: 1.0.0
+paths:
+  /store/inventory:
+    head:
+      tags:
+        - store
+      summary: Returns pet inventory response headers.
+      operationId: headInventory
+      responses:
+        "200":
+          description: successful operation
+          content:
+            text/plain:
+              example: head
+    get:
+      tags:
+        - store
+      summary: Returns pet inventories by status.
+      operationId: getInventory
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              example:
+                available: 3

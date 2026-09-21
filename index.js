@@ -5,7 +5,7 @@ import accepts from 'accepts'
 
 const X_MOCK_RESPONSE_HEADER = 'x-mock-response'
 const X_REQUEST_MATCH = 'x-request-match'
-const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD']
+const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'])
 
 // Normalizes media types for Accept and Content-Type comparisons.
 const MediaType = {
@@ -112,16 +112,19 @@ function rejectMissingResponses (responses, operationName) {
 
 // Adds each response example as either an explicit match or a same-name match.
 function pushMatchedEntry (explicitEntries, sameNameEntries, exampleName, example, statusCode, mediaType, requestExamples, operationName) {
+  // Resolves a named request example before attaching its condition variants.
   const getRequestExampleConditions = (requestExamples, matchName, operationName) => {
     rejectMissingRequestExample(requestExamples, matchName, operationName)
     return requestExamples.get(matchName)
   }
 
+  // Explicit links take precedence over response example names.
   if (example[X_REQUEST_MATCH]) {
     getRequestExampleConditions(requestExamples, example[X_REQUEST_MATCH], operationName)
       .forEach(conditions => {
         explicitEntries.push({ conditions, statusCode, mediaType, body: example.value })
       })
+  // Otherwise, a shared example name supplies the request conditions.
   } else if (requestExamples.has(exampleName)) {
     getRequestExampleConditions(requestExamples, exampleName, operationName)
       .forEach(conditions => {
@@ -204,10 +207,12 @@ function collectRequestExamples (pathItem, operation, operationName) {
 
 // Collects all response examples that can produce mock responses.
 function collectResponseEntries (pathItem, operation, operationName) {
+  // Keep each priority tier separate until all response examples are collected.
   const matchedExampleEntries = []
   const matchedSameNameEntries = []
   const parameterlessEntries = []
 
+  // Read the declared response statuses in OpenAPI definition order.
   const responses = Object.entries(operation.responses ?? {})
 
   rejectMissingResponses(responses, operationName)
@@ -215,6 +220,7 @@ function collectResponseEntries (pathItem, operation, operationName) {
   const requestExamples = collectRequestExamples(pathItem, operation, operationName)
 
   responses.forEach(([status, response]) => {
+    // Validate each status before using it as Fastify's numeric reply code.
     rejectInvalidRequestMatchLocation(response, operationName)
     rejectInvalidResponseStatusCode(status, operationName)
 
@@ -233,6 +239,7 @@ function collectResponseEntries (pathItem, operation, operationName) {
         }
       }
 
+      // Link named response examples to their request example conditions.
       Object.entries(media.examples ?? {}).forEach(([exampleName, example]) => {
         pushMatchedEntry(
           matchedExampleEntries,
@@ -258,6 +265,7 @@ function collectResponseEntries (pathItem, operation, operationName) {
 // Converts OpenAPI operations into Fastify route definitions.
 function buildMocks (api, onSkipOperation) {
   const buildOperationMock = (rawPath, pathItem, httpMethod, operation) => {
+    // Use the declared operationId, or a stable method-and-path fallback.
     const operationName = operation.operationId ?? `${httpMethod} ${rawPath}`
     const { requestExamples, entries } = collectResponseEntries(pathItem, operation, operationName)
 
@@ -267,6 +275,7 @@ function buildMocks (api, onSkipOperation) {
       return
     }
 
+    // Convert OpenAPI path parameters to Fastify route parameters.
     return {
       fastifyPath: rawPath.replace(/\{([^}]+)\}/g, ':$1'),
       httpMethod,
@@ -275,10 +284,13 @@ function buildMocks (api, onSkipOperation) {
     }
   }
 
+  // Preserve Path Item operation order so explicit HEAD can precede GET.
   return Object.entries(api.paths).flatMap(([rawPath, pathItem]) =>
-    HTTP_METHODS.flatMap(httpMethod => {
-      const operation = pathItem?.[httpMethod.toLowerCase()]
-      if (!operation) return []
+    Object.entries(pathItem).flatMap(([operationMethod, operation]) => {
+      const httpMethod = operationMethod.toUpperCase()
+
+      // Ignore path-level metadata and unsupported operations.
+      if (!HTTP_METHODS.has(httpMethod)) return []
 
       const mock = buildOperationMock(rawPath, pathItem, httpMethod, operation)
 
@@ -288,19 +300,24 @@ function buildMocks (api, onSkipOperation) {
 }
 
 export const fastifyMockFallback = fp(async (app, options) => {
+  // Default to disabled so mocks are explicitly opted in per environment.
   const { specification, enable = false } = options
 
+  // Leave the Fastify instance unchanged when fallback mocks are disabled.
   if (!enable) {
     app.log.info('mock fallback disabled, skipping')
     return
   }
 
+  // Resolve the specification before deriving route definitions from it.
   const api = await loadOpenApiSpecification(specification)
 
+  // Build all mockable operations and report parameterized operations without examples.
   const mocks = buildMocks(api, operationName => {
     app.log.warn(`skip operation "${operationName}", no response example found for parameterized operation`)
   })
 
+  // Register each mock unless the application already implements its route.
   mocks.forEach(mock => {
     const { fastifyPath, httpMethod, operationName, entries } = mock
 
@@ -343,6 +360,7 @@ export const fastifyMockFallback = fp(async (app, options) => {
     app.log.info(`registered mock operation: ${operationName}`)
   })
 
+  // Signal that all enabled mock route registrations have completed.
   app.log.info('finished registering mock routes')
 }, {
   name: 'fastify-mock-fallback',

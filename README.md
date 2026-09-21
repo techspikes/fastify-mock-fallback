@@ -23,7 +23,7 @@ npm i @techspikes/fastify-mock-fallback
 
 | Plugin version | Fastify version |
 | -------------- | --------------- |
-| `^0.2.x` | `^5.x` |
+| `^1.0.x` | `^5.x` |
 
 ## Supported Specification Versions
 
@@ -37,23 +37,23 @@ Register the plugin with an OpenAPI 3.0.x YAML or JSON file.
 
 ```js
 import Fastify from 'fastify'
-import mockFallback from '@techspikes/fastify-mock-fallback'
+import { fastifyMockFallback } from '@techspikes/fastify-mock-fallback'
 
 const fastify = Fastify()
-
-await fastify.register(mockFallback, {
-  specification: './openapi.yaml',
-  enable: process.env.NODE_ENV !== 'production',
-})
 
 fastify.get('/implemented', async () => {
   return { source: 'real handler' }
 })
 
+await fastify.register(fastifyMockFallback, {
+  specification: './openapi.yaml',
+  enable: process.env.NODE_ENV !== 'production',
+})
+
 await fastify.listen({ port: 3000 })
 ```
 
-Existing Fastify routes are not replaced. If a generated mock route conflicts with an already registered route, the existing route wins.
+Existing Fastify routes are not replaced. Register implemented routes before this plugin; if a generated mock route conflicts with an already registered route, the existing route wins. Registering an implemented route after a conflicting mock route causes Fastify to reject the duplicate route.
 
 ### Options
 
@@ -181,7 +181,7 @@ Unsupported OpenAPI parameter locations throw during plugin registration.
 * Converts OpenAPI paths such as `/pet/{petId}` to Fastify paths such as `/pet/:petId`.
 * Registers routes only for operations with at least one linked response.
 * Logs a warning when a parameterized operation has request examples but no linked response example.
-* Checks `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, and `HEAD`.
+* Checks `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, and `HEAD` in their OpenAPI definition order. When the same path defines both `HEAD` and `GET`, define `HEAD` first. If `GET` is defined first, Fastify's automatic `HEAD` route is used and the explicit `HEAD` mock is skipped.
 * Adds `x-mock-response: true` to generated mock responses.
 * Returns the matched response status code and body when a body is configured.
 * Returns `406` with `x-mock-response: true` when no response media type is acceptable.
