@@ -78,7 +78,7 @@ Remote `$ref` entries are disabled as a safety precaution and are not fetched.
 
 The plugin builds request examples from an operation's parameters and request body examples, then links responses to those request examples.
 
-Request examples can come from:
+Request examples can come only from named `examples` entries:
 
 | OpenAPI source | Fastify request field |
 | -------------- | --------------------- |
@@ -87,6 +87,8 @@ Request examples can come from:
 | `header` parameters | lower-case `request.headers` |
 | `cookie` parameters | `request.cookies` |
 | `requestBody` examples | `request.body` |
+
+The singular OpenAPI `example` field and `externalValue` are not used for request matching. A request body example must also match the request `Content-Type`; omitting `Content-Type` does not match a request body example.
 
 Parameter, header, cookie, and query values are compared as strings. Request bodies are compared with deep strict equality. Cookie matching requires a cookie parser such as `@fastify/cookie`.
 
@@ -169,8 +171,8 @@ In this example:
 
 Explicit references are strict:
 
-* `x-request-match` must reference an existing request example.
-* `x-request-match` can be defined only on response examples.
+* A truthy `x-request-match` on a response example must reference an existing request example.
+* `x-request-match` is interpreted only on response examples. It is rejected on parameter objects and examples, request and response media objects, and response objects; it is otherwise ignored.
 * response statuses must be concrete HTTP status codes from `100` to `599`.
 * each operation must define at least one response entry.
 
@@ -179,11 +181,10 @@ Unsupported OpenAPI parameter locations throw during plugin registration.
 ## Runtime Behavior
 
 * Converts OpenAPI paths such as `/pet/{petId}` to Fastify paths such as `/pet/:petId`.
-* Registers routes only for operations with at least one linked response.
-* Logs a warning when a parameterized operation has request examples but no linked response example.
-* Checks `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, and `HEAD` in their OpenAPI definition order. When the same path defines both `HEAD` and `GET`, define `HEAD` first. If `GET` is defined first, Fastify's automatic `HEAD` route is used and the explicit `HEAD` mock is skipped.
+* Registers a `501` fallback route for operations without request examples when no usable response example exists. Operations with request examples but no linked response example are not registered and log a warning.
+* Checks `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, and `HEAD` in their OpenAPI definition order. Other methods, including `TRACE`, are not generated. When the same path defines both `HEAD` and `GET`, define `HEAD` first. If `GET` is defined first, Fastify's automatic `HEAD` route is used and the explicit `HEAD` mock is skipped with a warning.
 * Adds `x-mock-response: true` to generated mock responses.
-* Returns the matched response status code and body when a body is configured.
+* Returns the matched response status code and body only when a response example supplies a body.
 * Returns `406` with `x-mock-response: true` when no response media type is acceptable.
 * Returns `501` with `x-mock-response: true` when no example matches.
 * Rejects invalid OpenAPI specs, including specs without `paths`.
