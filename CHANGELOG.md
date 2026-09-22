@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2] - 2026-09-22
+
+### Fixed
+
+- Ignore request examples with `externalValue` during request matching.
+
+### Changed
+
+- Support Fastify `^5.0.0`.
+
 ## [1.0.1] - 2026-09-21
 
 ### Changed
