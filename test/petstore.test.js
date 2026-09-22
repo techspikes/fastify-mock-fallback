@@ -935,6 +935,28 @@ describe('Petstore mock responses', () => {
           await app.close()
         }
       })
+
+      it('ignores parameter examples that use externalValue', async () => {
+        const app = await buildApp('../fixtures/petstore-request-external-value.yaml')
+
+        try {
+          const unmatchedResponse = await app.inject({ method: 'GET', url: '/pet/findByStatus' })
+
+          // externalValue must not make an absent query parameter match.
+          assert.equal(unmatchedResponse.statusCode, 501)
+
+          const matchedResponse = await app.inject({
+            method: 'GET',
+            url: '/pet/findByStatus?status=available',
+          })
+
+          // Named examples with a local value continue to match.
+          assert.equal(matchedResponse.statusCode, 200)
+          assert.deepEqual(matchedResponse.json(), { matched: 'available' })
+        } finally {
+          await app.close()
+        }
+      })
     })
   })
 

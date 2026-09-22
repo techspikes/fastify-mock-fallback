@@ -53,7 +53,7 @@ await fastify.register(fastifyMockFallback, {
 await fastify.listen({ port: 3000 })
 ```
 
-Existing Fastify routes are not replaced. Register implemented routes before this plugin; if a generated mock route conflicts with an already registered route, the existing route wins. Registering an implemented route after a conflicting mock route causes Fastify to reject the duplicate route.
+Existing Fastify routes are not replaced when they use the same HTTP method and route structure as a generated mock. Register implemented routes before this plugin; for example, a generated `GET /pet/:petId` mock is skipped when either `GET /pet/:petId` or `GET /pet/:id` is already registered. Registering an implemented route after a conflicting mock route causes Fastify to reject the duplicate route.
 
 ### Options
 
@@ -149,6 +149,60 @@ paths:
                 missing:
                   x-request-match: missing
                   value: { code: 404, message: not found }
+    post:
+      operationId: updatePetWithForm
+      parameters:
+        - in: path
+          name: petId
+          required: true
+          schema: { type: integer }
+          examples:
+            update-doggie:
+              value: 10
+        - in: query
+          name: name
+          schema: { type: string }
+          examples:
+            update-doggie:
+              value: doggie
+        - in: query
+          name: status
+          schema: { type: string }
+          examples:
+            update-doggie:
+              value: sold
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              examples:
+                default:
+                  x-request-match: update-doggie
+                  value: { id: 10, name: doggie, status: sold }
+  /pet:
+    post:
+      operationId: addPet
+      requestBody:
+        description: Create a new pet
+        required: true
+        content:
+          application/json:
+            examples:
+              doggie:
+                value:
+                  id: 10
+                  name: doggie
+                  status: available
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              examples:
+                default:
+                  x-request-match: doggie
+                  value: { id: 10, name: doggie, status: available }
   /pets:
     get:
       operationId: listPets
@@ -165,6 +219,8 @@ In this example:
 * `GET /pet/1` uses a response example with `x-request-match`.
 * `GET /pet/2` uses same-name matching.
 * `GET /pet/3` uses a response example with `x-request-match` and returns `404`.
+* `POST /pet/10?name=doggie&status=sold` matches its path and query examples, then returns the response selected by `x-request-match`.
+* `POST /pet` with `Content-Type: application/json` and the `doggie` request body matches the request body example and returns its linked response.
 * `GET /pets` has no request examples, so it uses the status `200` response `example`.
 
 ## Validation

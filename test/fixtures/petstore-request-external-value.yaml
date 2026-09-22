@@ -1,0 +1,30 @@
+openapi: 3.0.4
+info:
+  title: Petstore External Value
+  version: 1.0.0
+paths:
+  /pet/findByStatus:
+    get:
+      operationId: findPetsByStatus
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+          examples:
+            remote:
+              externalValue: https://example.com/pet-status.txt
+            available:
+              value: available
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              examples:
+                remote:
+                  value:
+                    matched: remote
+                available:
+                  value:
+                    matched: available

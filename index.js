@@ -162,44 +162,48 @@ function collectRequestExamples (pathItem, operation, operationName) {
     const source = RequestMatcher.sources[param.in]
 
     // Parameters without examples do not contribute matching conditions.
-    Object.entries(param.examples ?? {}).forEach(([exampleName, example]) => {
-      rejectInvalidRequestMatchLocation(example, operationName)
+    Object.entries(param.examples ?? {})
+      .filter(([, example]) => example.externalValue === undefined)
+      .forEach(([exampleName, example]) => {
+        rejectInvalidRequestMatchLocation(example, operationName)
 
-      const requestExampleVariants = requestExamples.get(exampleName) ?? [[]]
+        const requestExampleVariants = requestExamples.get(exampleName) ?? [[]]
 
-      requestExampleVariants.forEach(conditions => {
-        conditions.push({ source, name: param.name, value: example.value })
+        requestExampleVariants.forEach(conditions => {
+          conditions.push({ source, name: param.name, value: example.value })
+        })
+
+        requestExamples.set(exampleName, requestExampleVariants)
       })
-
-      requestExamples.set(exampleName, requestExampleVariants)
-    })
   })
 
   // Request body examples add body conditions to matching request examples.
   Object.entries(operation.requestBody?.content ?? {}).forEach(([mediaType, media]) => {
     rejectInvalidRequestMatchLocation(media, operationName)
 
-    Object.entries(media.examples ?? {}).forEach(([exampleName, example]) => {
-      rejectInvalidRequestMatchLocation(example, operationName)
+    Object.entries(media.examples ?? {})
+      .filter(([, example]) => example.externalValue === undefined)
+      .forEach(([exampleName, example]) => {
+        rejectInvalidRequestMatchLocation(example, operationName)
 
-      const existingVariants = requestExamples.get(exampleName) ?? [[]]
+        const existingVariants = requestExamples.get(exampleName) ?? [[]]
 
-      // Body examples attach to the parameter-only variant for the same name.
-      const parameterConditions = existingVariants.find(conditions =>
-        conditions.every(condition => condition.source !== 'body')
-      ) ?? existingVariants[0].filter(condition => condition.source !== 'body')
+        // Body examples attach to the parameter-only variant for the same name.
+        const parameterConditions = existingVariants.find(conditions =>
+          conditions.every(condition => condition.source !== 'body')
+        ) ?? existingVariants[0].filter(condition => condition.source !== 'body')
 
-      // Preserve existing body variants while adding this media type variant.
-      const requestExampleVariants = [
-        ...existingVariants.filter(conditions => conditions.some(condition => condition.source === 'body')),
-        [
-          ...parameterConditions,
-          { source: 'body', mediaType, value: example.value },
-        ],
-      ]
+        // Preserve existing body variants while adding this media type variant.
+        const requestExampleVariants = [
+          ...existingVariants.filter(conditions => conditions.some(condition => condition.source === 'body')),
+          [
+            ...parameterConditions,
+            { source: 'body', mediaType, value: example.value },
+          ],
+        ]
 
-      requestExamples.set(exampleName, requestExampleVariants)
-    })
+        requestExamples.set(exampleName, requestExampleVariants)
+      })
   })
 
   return requestExamples
