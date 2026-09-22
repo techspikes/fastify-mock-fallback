@@ -2,6 +2,7 @@
 
 [![Node.js CI](https://github.com/techspikes/fastify-mock-fallback/actions/workflows/ci.yml/badge.svg)](https://github.com/techspikes/fastify-mock-fallback/actions/workflows/ci.yml)
 [![neostandard javascript style](https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat)](https://github.com/neostandard/neostandard)
+[![npm version](https://img.shields.io/npm/v/%40techspikes/fastify-mock-fallback?style=flat)](https://www.npmjs.com/package/@techspikes/fastify-mock-fallback)
 
 Fastify plugin that registers fallback mock routes from OpenAPI request and response examples.
 
